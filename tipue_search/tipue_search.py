@@ -57,7 +57,9 @@ class Tipue_Search_JSON_Generator(object):
         node = {'title': page_title,
                 'text': page_text,
                 'tags': page_category,
-                'url': page_url}
+                'url': page_url,
+                'summary': page.summary,
+                'illustration': self.siteurl + '/' + page.illustration}
 
         self.json_nodes.append(node)
 
@@ -82,7 +84,9 @@ class Tipue_Search_JSON_Generator(object):
         node = {'title': page_title,
                 'text': page_text,
                 'tags': page_category,
-                'url': page_url}
+                'url': page_url,
+                'summary': (page_text[:200] + '..') if len(page_text) > 200 else page_text,
+                'illustration': soup.div.header.div.div.find_all('a')[1].img}
 
         self.json_nodes.append(node)
 
