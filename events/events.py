@@ -15,6 +15,7 @@ Released under AGPLv3+ license, see LICENSE
 
 from datetime import datetime, timedelta
 from pelican import signals, utils
+from collections import namedtuple
 import icalendar
 import logging
 import os.path
@@ -32,6 +33,7 @@ TIME_MULTIPLIERS = {
 
 events = []
 localized_events = {}
+Event = namedtuple("Event", "dtstart dtend metadata")
 
 
 def parse_tstamp(ev, field_name):
@@ -41,7 +43,7 @@ def parse_tstamp(ev, field_name):
     """
     try:
         return datetime.strptime(ev[field_name], '%Y-%m-%d %H:%M')
-    except Exception, e:
+    except Exception as e:
         log.error("Unable to parse the '%s' field in the event named '%s': %s" \
             % (field_name, ev['title'], e))
         raise
@@ -98,7 +100,7 @@ def parse_article(generator, metadata):
         log.error(msg)
         raise ValueError(msg)
 
-    events.append((dtstart, dtend, metadata))
+    events.append(Event(dtstart, dtend, metadata))
 
 
 def generate_ical_file(generator):
@@ -119,10 +121,13 @@ def generate_ical_file(generator):
     ical.add('prodid', '-//My calendar product//mxm.dk//')
     ical.add('version', '2.0')
 
+    #TODO: the following duplicate elimination is a hack, better make plugin fully multilang aware
+
     multiLanguageSupportNecessary = "i18n_subsites" in generator.settings["PLUGINS"]
     if multiLanguageSupportNecessary:
         currentLang = os.path.basename(os.path.normpath(generator.settings['OUTPUT_PATH']))
-        sortedUniqueEvents = sorted(events)
+        sortedUniqueEvents = sorted(events,
+                                    key=lambda ev: (ev.dtstart, ev.dtend, ev.metadata['lang']))
         last = sortedUniqueEvents[-1]
         for i in range(len(sortedUniqueEvents)-2, -1,-1):
             if last == sortedUniqueEvents[i]:
@@ -156,7 +161,9 @@ def generate_ical_file(generator):
         ical.add_component(ie)
 
     if localized_events:
-        localized_events[currentLang] = sorted(localized_events[currentLang], reverse=True)
+        localized_events[currentLang] = sorted(localized_events[currentLang], reverse=True,
+                                               key=lambda ev: (ev.dtstart, ev.dtend))
+
     if not os.path.exists(generator.settings['OUTPUT_PATH']):
         os.makedirs(generator.settings['OUTPUT_PATH'])
 
@@ -168,7 +175,8 @@ def generate_ical_file(generator):
 def generate_events_list(generator):
     """Populate the event_list variable to be used in jinja templates"""
     if not localized_events:
-        generator.context['events_list'] = sorted(events, reverse = True)
+        generator.context['events_list'] = sorted(events, reverse = True,
+                                                  key=lambda ev: (ev.dtstart, ev.dtend))
     else:
         generator.context['events_list'] = localized_events
 
