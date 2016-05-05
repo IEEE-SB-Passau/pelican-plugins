@@ -159,11 +159,16 @@ def generate_localized_events(generator):
 def generate_events_list(generator):
     """Populate the event_list variable to be used in jinja templates"""
 
+    if 'descending' in generator.settings['PLUGIN_EVENTS']:
+        orderDescending = generator.settings['PLUGIN_EVENTS']['descending']
+    else:
+        orderDescending = True
+
     if not localized_events:
-        generator.context['events_list'] = sorted(events, reverse = True,
+        generator.context['events_list'] = sorted(events, reverse = orderDescending,
                                                   key=lambda ev: (ev.dtstart, ev.dtend))
     else:
-        generator.context['events_list'] = {k: sorted(v, reverse = True,
+        generator.context['events_list'] = {k: sorted(v, reverse = orderDescending,
                                                       key=lambda ev: (ev.dtstart, ev.dtend))
                                             for k, v in localized_events.items()}
 
