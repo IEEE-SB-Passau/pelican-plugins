@@ -59,3 +59,11 @@ in the past at the bottom). To change this add::
   'descending': False
 
 to the PLUGIN_EVENTS dictionary.
+
+Additionally it is possible to exclude events which happened in the past
+from the list of shown events (the past event will still be available in the
+generated .ics file). To enable this filter add::
+
+  'filterPastEvents': True
+
+to the PLUGIN_EVENTS dicitionary.

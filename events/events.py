@@ -164,13 +164,24 @@ def generate_events_list(generator):
     else:
         orderDescending = True
 
+    if 'filterPastEvents' in generator.settings['PLUGIN_EVENTS']:
+        filterPast = generator.settings['PLUGIN_EVENTS']['filterPastEvents']
+    else:
+        filterPast = False
+
     if not localized_events:
-        generator.context['events_list'] = sorted(events, reverse = orderDescending,
+        generator.context['events_list'] = sorted(filterPastEvents(filterPast, events), reverse = orderDescending,
                                                   key=lambda ev: (ev.dtstart, ev.dtend))
     else:
-        generator.context['events_list'] = {k: sorted(v, reverse = orderDescending,
+        generator.context['events_list'] = {k: sorted(filterPastEvents(filterPast, v), reverse = orderDescending,
                                                       key=lambda ev: (ev.dtstart, ev.dtend))
                                             for k, v in localized_events.items()}
+
+def filterPastEvents(shouldFilter, events):
+    if not shouldFilter:
+        return events
+    else:
+        return filter(lambda ev: (datetime.now() < ev.dtstart), events)
 
 def initialize_events(article_generator):
     """
