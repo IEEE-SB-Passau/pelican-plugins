@@ -52,10 +52,10 @@ content/pages/events_list.rst::
  :summary:
  :template: events_list
 
- Please note that the events are sorted in descending order per default
- (e.g. an event in the future will be displayed on the top, an event
- in the past at the bottom). To change this add::
+Please note that the events are sorted in descending order per default
+(e.g. an event in the future will be displayed on the top, an event
+in the past at the bottom). To change this add::
 
   'descending': False
 
-  to the PLUGIN_EVENTS dictionary.
+to the PLUGIN_EVENTS dictionary.
