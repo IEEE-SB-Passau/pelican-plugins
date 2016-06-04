@@ -100,6 +100,9 @@ def parse_article(generator, metadata):
         log.error(msg)
         raise ValueError(msg)
 
+    metadata["event-start-date"] = dtstart
+    metadata["event-end-date"] = dtend
+
     events.append(Event(dtstart, dtend, metadata))
 
 
