@@ -103,7 +103,9 @@ def parse_article(generator, metadata):
     metadata["event-start-date"] = dtstart
     metadata["event-end-date"] = dtend
 
-    events.append(Event(dtstart, dtend, metadata))
+    event = Event(dtstart, dtend, metadata)
+    if not event in events:
+        events.append(event)
 
 
 def generate_ical_file(generator):
