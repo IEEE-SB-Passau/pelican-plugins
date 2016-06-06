@@ -359,8 +359,7 @@ def interlink_static_files(generator):
 def save_main_static_files(static_generator):
     '''Save the static files generated for the main site'''
     global _MAIN_STATIC_FILES
-    # test just for current lang as settings change in autoreload mode
-    if static_generator.settings['DEFAULT_LANG'] == _MAIN_LANG:
+    if static_generator.settings['SITEURL'] == _MAIN_SITEURL:
         _MAIN_STATIC_FILES = static_generator.staticfiles
 
 
