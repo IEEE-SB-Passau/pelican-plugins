@@ -33,7 +33,7 @@ TIME_MULTIPLIERS = {
 
 events = []
 localized_events = defaultdict(list)
-Event = namedtuple("Event", "dtstart dtend metadata")
+Event = namedtuple("Event", "dtstart dtend metadata article")
 
 
 def parse_tstamp(ev, field_name):
@@ -77,35 +77,41 @@ field in the '%s' event.""" % (c, ev['title']))
     return timedelta(**tdargs)
 
 
-def parse_article(generator, metadata):
+def parse_articles(generator):
     """Collect articles metadata to be used for building the event calendar
 
     :returns: None
     """
-    if 'event-start' not in metadata:
-        return
 
-    dtstart = parse_tstamp(metadata, 'event-start')
+    for article in generator.context["filenames"].values():
+        metadata = article.metadata
 
-    if 'event-end' in metadata:
-        dtend = parse_tstamp(metadata, 'event-end')
+        if 'event-start' not in metadata:
+            continue
 
-    elif 'event-duration' in metadata:
-        dtdelta = parse_timedelta(metadata)
-        dtend = dtstart + dtdelta
+        dtstart = parse_tstamp(metadata, 'event-start')
 
-    else:
-        msg = "Either 'event-end' or 'event-duration' must be" + \
-            " speciefied in the event named '%s'" % metadata['title']
-        log.error(msg)
-        raise ValueError(msg)
+        if 'event-end' in metadata:
+            dtend = parse_tstamp(metadata, 'event-end')
 
-    metadata["event-start-date"] = dtstart
-    metadata["event-end-date"] = dtend
+        elif 'event-duration' in metadata:
+            dtdelta = parse_timedelta(metadata)
+            dtend = dtstart + dtdelta
 
-    event = Event(dtstart, dtend, metadata)
-    if not event in events:
-        events.append(event)
+        else:
+            msg = "Either 'event-end' or 'event-duration' must be" + \
+                " speciefied in the event named '%s'" % metadata['title']
+            log.error(msg)
+            raise ValueError(msg)
+
+        setattr(article, "event-start", dtstart)
+        setattr(article, "event-end", dtend)
+        setattr(article, "event_start", dtstart)
+        setattr(article, "event_end", dtend)
+
+        event = Event(dtstart, dtend, metadata, article)
+        if not event in events:
+            events.append(event)
 
 
 def generate_ical_file(generator):
@@ -183,9 +189,8 @@ def initialize_events(article_generator):
 
 def register():
     signals.article_generator_init.connect(initialize_events)
-    signals.article_generator_context.connect(parse_article)
+    signals.article_generator_pretaxonomy.connect(parse_articles)
     signals.article_generator_finalized.connect(generate_localized_events)
     signals.article_generator_finalized.connect(generate_ical_file)
     signals.article_generator_finalized.connect(generate_events_list)
-
 
