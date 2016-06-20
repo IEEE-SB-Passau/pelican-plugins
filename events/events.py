@@ -77,41 +77,48 @@ field in the '%s' event.""" % (c, ev['title']))
     return timedelta(**tdargs)
 
 
-def parse_articles(generator):
+def parse_article(content):
     """Collect articles metadata to be used for building the event calendar
 
     :returns: None
     """
 
-    for article in generator.context["filenames"].values():
-        metadata = article.metadata
+    metadata = content.metadata
 
-        if 'event-start' not in metadata:
-            continue
+    if 'event-start' not in metadata:
+        return
 
-        dtstart = parse_tstamp(metadata, 'event-start')
+    dtstart = parse_tstamp(metadata, 'event-start')
 
-        if 'event-end' in metadata:
-            dtend = parse_tstamp(metadata, 'event-end')
+    if 'event-end' in metadata:
+        dtend = parse_tstamp(metadata, 'event-end')
 
-        elif 'event-duration' in metadata:
-            dtdelta = parse_timedelta(metadata)
-            dtend = dtstart + dtdelta
+    elif 'event-duration' in metadata:
+        dtdelta = parse_timedelta(metadata)
+        dtend = dtstart + dtdelta
 
-        else:
-            msg = "Either 'event-end' or 'event-duration' must be" + \
-                " speciefied in the event named '%s'" % metadata['title']
-            log.error(msg)
-            raise ValueError(msg)
+    else:
+        msg = "Either 'event-end' or 'event-duration' must be" + \
+            " speciefied in the event named '%s'" % metadata['title']
+        log.error(msg)
+        raise ValueError(msg)
 
-        setattr(article, "event-start", dtstart)
-        setattr(article, "event-end", dtend)
-        setattr(article, "event_start", dtstart)
-        setattr(article, "event_end", dtend)
+    setattr(content, "event-start", dtstart)
+    setattr(content, "event-end", dtend)
+    setattr(content, "event_start", dtstart)
+    setattr(content, "event_end", dtend)
 
-        event = Event(dtstart, dtend, metadata, article)
-        if not event in events:
-            events.append(event)
+def generate_events(generator):
+    for content in generator.context["filenames"].values():
+        if hasattr(content, "event_start"):
+            event = Event(content.event_start, content.event_end,
+                          content.metadata, content)
+            if not event in events:
+                events.append(event)
+
+    generate_localized_events(generator)
+    generate_ical_file(generator)
+    generate_events_list(generator)
 
 
 def generate_ical_file(generator):
@@ -189,8 +196,5 @@ def initialize_events(article_generator):
 
 def register():
     signals.article_generator_init.connect(initialize_events)
-    signals.article_generator_pretaxonomy.connect(parse_articles)
-    signals.article_generator_finalized.connect(generate_localized_events)
-    signals.article_generator_finalized.connect(generate_ical_file)
-    signals.article_generator_finalized.connect(generate_events_list)
-
+    signals.content_object_init.connect(parse_article)
+    signals.article_generator_finalized.connect(generate_events)
