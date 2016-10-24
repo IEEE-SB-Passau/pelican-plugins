@@ -132,8 +132,8 @@ def generate_ical_file(generator):
     ics_fname = os.path.join(generator.settings['OUTPUT_PATH'], ics_fname)
     log.debug("Generating calendar at %s with %d events" % (ics_fname, len(events)))
 
-    tz = generator.settings.get('TIMEZONE', 'UTC')
-    tz = pytz.timezone(tz)
+
+    local_tz = pytz.timezone(generator.settings["TIMEZONE"])
 
     ical = icalendar.Calendar()
     ical.add('prodid', '-//My calendar product//mxm.dk//')
@@ -141,13 +141,16 @@ def generate_ical_file(generator):
 
     DEFAULT_LANG = generator.settings['DEFAULT_LANG']
     curr_events = events if not localized_events else localized_events[DEFAULT_LANG]
-
     for e in curr_events:
+        dtstart_utc = local_tz.localize(e.dtstart).astimezone(pytz.utc)
+        dtend_utc = local_tz.localize(e.dtend).astimezone(pytz.utc)
+        dtstamp_utc = local_tz.localize(e.metadata['date']).astimezone(pytz.utc)
+
         ie = icalendar.Event(
             summary=e.metadata['summary'],
-            dtstart=e.dtstart,
-            dtend=e.dtend,
-            dtstamp=e.metadata['date'],
+            dtstart=icalendar.vDatetime(dtstart_utc).to_ical(),
+            dtend=icalendar.vDatetime(dtend_utc).to_ical(),
+            dtstamp=icalendar.vDatetime(dtstamp_utc).to_ical(),
             priority=5,
             uid=e.metadata['title'] + e.metadata['summary'],
         )
