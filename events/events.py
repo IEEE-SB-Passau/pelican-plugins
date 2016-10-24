@@ -152,7 +152,7 @@ def generate_ical_file(generator):
             dtend=icalendar.vDatetime(dtend_utc).to_ical(),
             dtstamp=icalendar.vDatetime(dtstamp_utc).to_ical(),
             priority=5,
-            uid=e.metadata['title'] + e.metadata['summary'],
+            uid=e.metadata['slug'] + "@" + generator.settings["SITENAME"],
         )
         if 'event-location' in e.metadata:
             ie.add('location', e.metadata['event-location'])
