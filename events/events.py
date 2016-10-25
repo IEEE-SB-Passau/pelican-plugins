@@ -16,6 +16,7 @@ Released under AGPLv3+ license, see LICENSE
 from datetime import datetime, timedelta
 from pelican import signals, utils
 from collections import namedtuple, defaultdict
+from jinja2 import Markup
 import icalendar
 import logging
 import os.path
@@ -136,26 +137,35 @@ def generate_ical_file(generator):
     local_tz = pytz.timezone(generator.settings["TIMEZONE"])
 
     ical = icalendar.Calendar()
-    ical.add('prodid', '-//My calendar product//mxm.dk//')
+    ical.add('prodid', '-//pelican/events//mxm.dk//EN')
     ical.add('version', '2.0')
+    ical.add("METHOD", "PUBLISH")
 
+    SITEURL = generator.settings['SITEURL']
     DEFAULT_LANG = generator.settings['DEFAULT_LANG']
     curr_events = events if not localized_events else localized_events[DEFAULT_LANG]
+
     for e in curr_events:
         dtstart_utc = local_tz.localize(e.dtstart).astimezone(pytz.utc)
         dtend_utc = local_tz.localize(e.dtend).astimezone(pytz.utc)
         dtstamp_utc = local_tz.localize(e.metadata['date']).astimezone(pytz.utc)
 
         ie = icalendar.Event(
-            summary=e.metadata['summary'],
+            summary=Markup(e.metadata['title']).striptags(),
             dtstart=icalendar.vDatetime(dtstart_utc).to_ical(),
             dtend=icalendar.vDatetime(dtend_utc).to_ical(),
             dtstamp=icalendar.vDatetime(dtstamp_utc).to_ical(),
-            priority=5,
             uid=e.metadata['slug'] + "@" + generator.settings["SITENAME"],
         )
+        ie.add("CLASS", "PUBLIC")
+
+        summary = Markup(e.article.get_summary(SITEURL)).striptags()
+        ie.add("DESCRIPTION", summary)
+
         if 'event-location' in e.metadata:
             ie.add('location', e.metadata['event-location'])
+        elif 'location' in e.metadata:
+            ie.add('location', e.metadata['location'])
 
         ical.add_component(ie)
 
