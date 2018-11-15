@@ -72,6 +72,8 @@ Creole reader             Allows you to write your posts using the wikicreole sy
 
 Custom article URLs       Adds support for defining different default URLs for different categories
 
+CTags generator           Generates a "tags" file following the CTags in the "content/" directory, to provide autocompletion for code editors that support it.
+
 Dateish                   Treat arbitrary metadata fields as datetime objects
 
 Dead Links                Manage dead links (website not available, errors such as 403, 404)
@@ -130,6 +132,8 @@ Interlinks                Lets you add frequently used URLs to your markup using
 
 Jinja2 Content            Allows the use of Jinja2 template code in articles, including ``include`` and ``import`` statements. Replacement for pelican-jinja2content.
 
+JPEG Reader               Create image gallery pages based on content of JPEG metadata
+
 Just table                Allows you to easily create and manage tables. You can embed the tables into posts with a simple way.
 
 Libravatar                Allows inclusion of user profile pictures from libravatar.org
@@ -149,6 +153,10 @@ Markdown-metaYAML         Pelican reader to enable YAML-style metadata in markdo
 Math Render               Gives pelican the ability to render mathematics
 
 Mbox Reader               Generate articles automatically via email, given a path to a Unix mbox
+
+More Categories           Multiple categories per article; nested categories (`foo/bar, foo/baz`)
+
+Multi Neighbors           Adds a list of newer articles and a list of older articles to every article's context.
 
 Multi parts posts         Allows you to write multi-part posts
 
@@ -188,6 +196,8 @@ Pelican Jinja2Content     Allows the use of Jinja2 template code in articles, in
 
 Pelican Link Class        Set class attribute of ``<a>`` elements according to whether the link is external or internal
 
+Pelican Meetup Info       Include your Meetup.com group and event information on generated pages and articles
+
 Pelican Page Hierarchy    Creates a URL hierarchy for pages that matches the filesystem hierarchy of their sources
 
 Pelican Page Order        Adds a ``page_order`` attribute to all pages if one is not defined.
@@ -220,6 +230,8 @@ Random article            Generates a html file which redirect to a random artic
 
 Read More link            Inserts an inline "read more" or "continue" link into the last html element of the object summary
 
+Readtime                  Adds article estimated read time calculator to the site, in the form of '<n> minutes'. 
+
 Related posts             Adds the ``related_posts`` variable to the article's context
 
 Render Math               Render mathematics in content via the MathJax Javascript engine
@@ -237,6 +249,8 @@ Series                    Groups related articles into a series
 Share post                Creates share URLs of article
 
 Show Source               Place a link to the source text of your posts.
+
+Similar Posts             Adds a list of similar posts to every article's context.
 
 Simple footnotes          Adds footnotes to blog posts
 

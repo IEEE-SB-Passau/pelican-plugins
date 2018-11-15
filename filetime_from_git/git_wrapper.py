@@ -31,6 +31,11 @@ class _GitWrapperCommon(object):
     '''
     def __init__(self, repo_path):
         self.git = Git()
+        self.git.update_environment(
+            GIT_CONFIG_NOSYSTEM='true',
+            HOME=os.getcwd(),
+            XDG_CONFIG_HOME=os.getcwd()
+        )
         self.repo = Repo(os.path.abspath('.'))
 
     def is_file_managed_by_git(self, path):
@@ -39,7 +44,7 @@ class _GitWrapperCommon(object):
         :returns: True if path is managed by git
         '''
         status, _stdout, _stderr = self.git.execute(
-            ['git', 'ls-files', path.encode('utf-8'), '--error-unmatch'],
+            ['git', 'ls-files', path, '--error-unmatch'],
             with_extended_output=True,
             with_exceptions=False)
         return status == 0
@@ -51,7 +56,7 @@ class _GitWrapperCommon(object):
         :returns: True if file has local changes
         '''
         status, _stdout, _stderr = self.git.execute(
-            ['git', 'diff', '--quiet', 'HEAD', path.encode('utf-8')],
+            ['git', 'diff', '--quiet', 'HEAD', path],
             with_extended_output=True,
             with_exceptions=False)
         return status != 0
@@ -77,7 +82,7 @@ class _GitWrapperCommon(object):
             '--follow',
             '--name-only',
             '--',
-            path.encode('utf-8')).splitlines()
+            path).splitlines()
 
         for commit_sha, _, filename in grouper(log_result, 3):
             yield self.repo.commit(commit_sha), filename
@@ -106,7 +111,7 @@ class _GitWrapperLegacy(_GitWrapperCommon):
 
         :returns: Sequence of commit objects. Newest to oldest
         '''
-        return self.repo.commits(path=path.encode('utf-8'))
+        return self.repo.commits(path=path)
 
     @staticmethod
     def get_commit_date(commit, tz_name):
@@ -128,12 +133,14 @@ class _GitWrapper(_GitWrapperCommon):
         :returns: Sequence of commit objects. Newest to oldest
 
         .. NOTE ::
-            If this fails it could be that your gitpython version is out of sync with the git
-            binary on your distro. Make sure you use the correct gitpython version.
+            If this fails it could be that your gitpython version is out of
+            sync with the git binary on your distro.
+            Make sure you use the correct gitpython version.
 
-            Alternatively enabling GIT_FILETIME_FOLLOW may also make your problem go away.
+            Alternatively enabling GIT_FILETIME_FOLLOW may also make your
+            problem go away.
         '''
-        return list(self.repo.iter_commits(paths=path.encode('utf-8')))
+        return list(self.repo.iter_commits(paths=path))
 
     @staticmethod
     def get_commit_date(commit, tz_name):
