@@ -110,7 +110,7 @@ def parse_article(content):
     setattr(content, "event_end", dtend)
 
 def generate_events(generator):
-    for content in generator.context["filenames"].values():
+    for content in generator.context["generated_content"].values():
         if hasattr(content, "event_start"):
             event = Event(content.event_start, content.event_end,
                           content.metadata, content)
